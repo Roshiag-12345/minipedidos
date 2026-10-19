@@ -1,7 +1,9 @@
 services:
   rabbitmq:
-    image: rabbitmq:4.2-management
+    image: rabbitmq:4-management
     container_name: rabbitmq
+    hostname: rabbitmq
+    restart: unless-stopped
     ports:
       - "5672:5672"
       - "15672:15672"
@@ -10,14 +12,11 @@ services:
       RABBITMQ_DEFAULT_PASS: guest
     volumes:
       - rabbitmq_data:/var/lib/rabbitmq
-
-  elasticmq:
-    image: softwaremill/elasticmq-native:latest
-    container_name: elasticmq
-    ports:
-      - "9324:9324"
-    volumes:
-      - ./elasticmq/custom.conf:/opt/elasticmq.conf:ro
-
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 10s
+      timeout: 10s
+      retries: 10
+      start_period: 30s
 volumes:
   rabbitmq_data:
